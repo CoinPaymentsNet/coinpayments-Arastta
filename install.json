@@ -1,0 +1,1 @@
+{  "author": {    "name": "CoinPayments and Arastta Core",    "email": "",    "website": "https://www.coinpayments.net/"  },  "extension": {    "name": "CoinPayments",    "description": "&lt;p&gt;CoinPayments for Arastta&lt;br&gt;&lt;/p&gt;",    "type": "payment",    "version": "2.0.0",    "code": "coinpayments",    "product_id": "96"  }}
