@@ -92,7 +92,7 @@ class Coinpayments
             ),
         );
 
-        $params = $this->appendInvoiceMetadata($params);
+        $params = $this->appendInvoiceMetadata($params, 'notesToRecipient');
         return $this->sendRequest('POST', $action, $client_id, $params);
     }
 
@@ -120,7 +120,7 @@ class Coinpayments
             ),
         );
 
-        $params = $this->appendInvoiceMetadata($params);
+        $params = $this->appendInvoiceMetadata($params, 'notes');
         return $this->sendRequest('POST', $action, $client_id, $params, $client_secret);
     }
 
@@ -173,14 +173,23 @@ class Coinpayments
     /**
      * @return string
      */
+    protected function getShopHostname(){
+
+        if (defined('HTTP_CATALOG')) {
+            $hostname = $this->config->get('config_secure') ? HTTP_CATALOG : HTTPS_CATALOG;
+        } else {
+            $hostname = $this->config->get('config_secure') ? HTTP_SERVER : HTTPS_SERVER;
+        }
+        return $hostname;
+    }
+
+    /**
+     * @return string
+     */
     public function getNotificationUrl($client_id, $event)
     {
 
-        if (defined('HTTP_CATALOG')) {
-            $url = new Url(HTTP_CATALOG, $this->config->get('config_secure') ? HTTP_CATALOG : HTTPS_CATALOG);
-        } else {
-            $url = new Url(HTTP_SERVER, $this->config->get('config_secure') ? HTTP_SERVER : HTTPS_SERVER);
-        }
+        $url = new Url(defined('HTTP_CATALOG') ? HTTP_CATALOG : HTTP_SERVER,$this->getShopHostname());
 
         return html_entity_decode($url->link(self::WEBHOOK_NOTIFICATION_URL, 'clientId='.$client_id . '&event='.$event));
     }
@@ -199,18 +208,16 @@ class Coinpayments
      * @param $request_data
      * @return mixed
      */
-    protected function appendInvoiceMetadata($request_data)
+    protected function appendInvoiceMetadata($request_data, $notes_field_name)
     {
-        if (defined('HTTP_CATALOG')) {
-            $hostname = $this->config->get('config_secure') ? HTTP_CATALOG : HTTPS_CATALOG;
-        } else {
-            $hostname = $this->config->get('config_secure') ? HTTP_SERVER : HTTPS_SERVER;
-        }
+        $hostname = $this->getShopHostname();
 
         $request_data['metadata'] = array(
             "integration" => sprintf("Arastta_v%s", VERSION),
             "hostname" => $hostname,
         );
+
+        $request_data[$notes_field_name] = sprintf("%s / Store name: %s / Order # %s",$hostname,$this->config->get('config_name'),explode('|', $request_data['invoiceId'])[1]);
 
         return $request_data;
     }
