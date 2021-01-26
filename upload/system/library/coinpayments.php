@@ -7,6 +7,7 @@ class Coinpayments
 {
 
     const API_URL = 'https://api.coinpayments.net';
+    const CHECKOUT_URL = 'https://checkout.coinpayments.net';
     const API_VERSION = '1';
 
     const API_SIMPLE_INVOICE_ACTION = 'invoices';
@@ -15,6 +16,10 @@ class Coinpayments
     const API_CURRENCIES_ACTION = 'currencies';
     const API_CHECKOUT_ACTION = 'checkout';
     const FIAT_TYPE = 'fiat';
+
+    const PAID_EVENT = 'Paid';
+    const CANCELLED_EVENT = 'Cancelled';
+    const PENDING_EVENT = 'Pending';
 
     const WEBHOOK_NOTIFICATION_URL = 'payment/coinpayments/callback';
 
@@ -49,20 +54,15 @@ class Coinpayments
      * @return bool|mixed
      * @throws Exception
      */
-    public function createWebHook($client_id, $client_secret, $notification_url)
+    public function createWebHook($client_id, $client_secret, $notification_url, $event)
     {
 
         $action = sprintf(self::API_WEBHOOK_ACTION, $client_id);
 
         $params = array(
             "notificationsUrl" => $notification_url,
-            "notifications" => array(
-                "invoiceCreated",
-                "invoicePending",
-                "invoicePaid",
-                "invoiceCompleted",
-                "invoiceCancelled",
-            ),
+            "notifications" =>[
+                sprintf("invoice%s", $event)],
         );
 
         return $this->sendRequest('POST', $action, $client_id, $params, $client_secret);
@@ -92,7 +92,7 @@ class Coinpayments
             ),
         );
 
-        $params = $this->appendInvoiceMetadata($params);
+        $params = $this->appendInvoiceMetadata($params, 'notesToRecipient');
         return $this->sendRequest('POST', $action, $client_id, $params);
     }
 
@@ -120,7 +120,7 @@ class Coinpayments
             ),
         );
 
-        $params = $this->appendInvoiceMetadata($params);
+        $params = $this->appendInvoiceMetadata($params, 'notes');
         return $this->sendRequest('POST', $action, $client_id, $params, $client_secret);
     }
 
@@ -173,16 +173,25 @@ class Coinpayments
     /**
      * @return string
      */
-    public function getNotificationUrl()
-    {
+    protected function getShopHostname(){
 
         if (defined('HTTP_CATALOG')) {
-            $url = new Url(HTTP_CATALOG, $this->config->get('config_secure') ? HTTP_CATALOG : HTTPS_CATALOG);
+            $hostname = $this->config->get('config_secure') ? HTTP_CATALOG : HTTPS_CATALOG;
         } else {
-            $url = new Url(HTTP_SERVER, $this->config->get('config_secure') ? HTTP_SERVER : HTTPS_SERVER);
+            $hostname = $this->config->get('config_secure') ? HTTP_SERVER : HTTPS_SERVER;
         }
+        return $hostname;
+    }
 
-        return $url->link(self::WEBHOOK_NOTIFICATION_URL);
+    /**
+     * @return string
+     */
+    public function getNotificationUrl($client_id, $event)
+    {
+
+        $url = new Url(defined('HTTP_CATALOG') ? HTTP_CATALOG : HTTP_SERVER,$this->getShopHostname());
+
+        return html_entity_decode($url->link(self::WEBHOOK_NOTIFICATION_URL, 'clientId='.$client_id . '&event='.$event));
     }
 
     /**
@@ -199,18 +208,16 @@ class Coinpayments
      * @param $request_data
      * @return mixed
      */
-    protected function appendInvoiceMetadata($request_data)
+    protected function appendInvoiceMetadata($request_data, $notes_field_name)
     {
-        if (defined('HTTP_CATALOG')) {
-            $hostname = $this->config->get('config_secure') ? HTTP_CATALOG : HTTPS_CATALOG;
-        } else {
-            $hostname = $this->config->get('config_secure') ? HTTP_SERVER : HTTPS_SERVER;
-        }
+        $hostname = $this->getShopHostname();
 
         $request_data['metadata'] = array(
             "integration" => sprintf("Arastta_v%s", VERSION),
             "hostname" => $hostname,
         );
+
+        $request_data[$notes_field_name] = sprintf("%s / Store name: %s / Order # %s",$hostname,$this->config->get('config_name'),explode('|', $request_data['invoiceId'])[1]);
 
         return $request_data;
     }
