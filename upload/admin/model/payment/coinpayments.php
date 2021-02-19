@@ -53,11 +53,9 @@ class Modelpaymentcoinpayments extends Model
                 }, $webhooks_list['items']);
             }
             $notificationUrlCancelled = $this->coinpayments->getNotificationUrl($client_id, Coinpayments::CANCELLED_EVENT);
-            $notificationUrlPending = $this->coinpayments->getNotificationUrl($client_id, Coinpayments::PENDING_EVENT);
             $notificationUrlPaid = $this->coinpayments->getNotificationUrl($client_id, Coinpayments::PAID_EVENT);
-            if (!in_array($notificationUrlCancelled, $webhooks_urls_list) || !in_array($notificationUrlPending, $webhooks_urls_list) || !in_array($notificationUrlPaid, $webhooks_urls_list)) {
+            if (!in_array($notificationUrlCancelled, $webhooks_urls_list) || !in_array($notificationUrlPaid, $webhooks_urls_list)) {
                 $webHookCancelled = $this->coinpayments->createWebHook($client_id, $client_secret,$notificationUrlCancelled,Coinpayments::CANCELLED_EVENT);
-                $webHookPending = $this->coinpayments->createWebHook($client_id, $client_secret,$notificationUrlPending,Coinpayments::PENDING_EVENT);
                 $webHookPaid = $this->coinpayments->createWebHook($client_id, $client_secret,$notificationUrlPaid,Coinpayments::PAID_EVENT);
                 if (!empty($webHookCancelled) && !empty($webHookPending) && !empty($webHookPaid)) {
                     $valid = true;
