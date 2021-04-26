@@ -16,3 +16,13 @@ To install:
  with "Upload Extension" button
     or just upload the contents of the upload folder into your Arastta root folder.
 2) Edit the plugin settings with your CoinPayments Client ID and Client Secret and set the status to Enabled.
+
+# Follow the steps below to download this plugin:
+  
+1. Log into your https://alpha.coinpayments.net/ account
+2. Click on Business Tools -> Intergrations -> Pre-built Plugins -> + add Intergration button
+3. Select this plug-in from the dropdown menu
+4. Click the download plugin button  
+   
+
+![Screenshot 2021-04-26 042606](https://user-images.githubusercontent.com/72504315/116075260-96edfc80-a647-11eb-8854-1bf6e4555c4d.png)
