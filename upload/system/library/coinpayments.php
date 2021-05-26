@@ -201,7 +201,7 @@ class Coinpayments
     /**
      * @return string
      */
-    protected function getShopHostname(){
+    public function getShopHostname(){
 
         if (defined('HTTP_CATALOG')) {
             $hostname = $this->config->get('config_secure') ? HTTP_CATALOG : HTTPS_CATALOG;
