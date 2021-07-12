@@ -28,7 +28,14 @@ class Modelpaymentcoinpayments extends Model
      */
     public function validateInvoice($client_id)
     {
-        $invoice = $this->coinpayments->createSimpleInvoice($client_id);
+        $invoice_params=array(
+            'invoice_id' => 'Validate invoice',
+            'currency_id' => 5057,
+            'amount' => 1,
+            'display_value' => '0.01',
+            'notes_link' => 'Validate invoice'
+        );
+        $invoice = $this->coinpayments->createSimpleInvoice($client_id, $invoice_params);
         return !empty($invoice['id']);
     }
 
@@ -55,9 +62,7 @@ class Modelpaymentcoinpayments extends Model
             $notificationUrlCancelled = $this->coinpayments->getNotificationUrl($client_id, Coinpayments::CANCELLED_EVENT);
             $notificationUrlPaid = $this->coinpayments->getNotificationUrl($client_id, Coinpayments::PAID_EVENT);
             if (!in_array($notificationUrlCancelled, $webhooks_urls_list) || !in_array($notificationUrlPaid, $webhooks_urls_list)) {
-                $webHookCancelled = $this->coinpayments->createWebHook($client_id, $client_secret,$notificationUrlCancelled,Coinpayments::CANCELLED_EVENT);
-                $webHookPaid = $this->coinpayments->createWebHook($client_id, $client_secret,$notificationUrlPaid,Coinpayments::PAID_EVENT);
-                if (!empty($webHookCancelled) && !empty($webHookPending) && !empty($webHookPaid)) {
+                if (!empty($this->coinpayments->createWebHook($client_id, $client_secret,$notificationUrlCancelled,Coinpayments::CANCELLED_EVENT)) && !empty( $this->coinpayments->createWebHook($client_id, $client_secret,$notificationUrlPaid,Coinpayments::PAID_EVENT))) {
                     $valid = true;
                 }
             } else {
