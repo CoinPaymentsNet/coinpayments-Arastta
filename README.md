@@ -1,3 +1,5 @@
+> NOTICE: Migrated to [CoinPaymentsNet/plugin-arastta](https://github.com/CoinPaymentsNet/plugin-arastta).
+
 IMPORTANT NOTE:
 
 This is only for use with: https://alpha.coinpayments.net/
